@@ -1,5 +1,5 @@
 local RayCast = lib.raycast.cam
-local rayCastDistance = Shared.rayCastingDistance
+local rayCastDistance = Config.rayCastingDistance
 
 local seedPlaced = false
 local placingSeed = false
@@ -17,7 +17,7 @@ end)
 RegisterNetEvent('weedplanting:client:UseWeedSeed', function()
     if cache.vehicle then return end
 
-    local hasItem = client.hasItems(Shared.FemaleSeed, 1)
+    local hasItem = client.hasItems(Config.FemaleSeed, 1)
     if not hasItem then return end
 
     if placingSeed then return end
@@ -32,9 +32,9 @@ RegisterNetEvent('weedplanting:client:UseWeedSeed', function()
 
     local hit, entityHit, endCoords, surfaceNormal, materialHash = RayCast(511, 4, rayCastDistance)
 
-    local ModelHash = Shared.WeedProps[1]
+    local ModelHash = Config.WeedProps[1]
     lib.requestModel(ModelHash)
-    local plant = CreateObject(ModelHash, endCoords.x, endCoords.y, endCoords.z + Shared.ObjectZOffset, false, false, false)
+    local plant = CreateObject(ModelHash, endCoords.x, endCoords.y, endCoords.z + Config.ObjectZOffset, false, false, false)
     SetModelAsNoLongerNeeded(ModelHash)
     SetEntityCollision(plant, false, false)
     SetEntityAlpha(plant, 200, true)
@@ -43,13 +43,13 @@ RegisterNetEvent('weedplanting:client:UseWeedSeed', function()
         hit, entityHit, endCoords, surfaceNormal, materialHash = RayCast(511, 4, rayCastDistance)
 
         if hit then
-            SetEntityCoords(plant, endCoords.x, endCoords.y, endCoords.z + Shared.ObjectZOffset)
+            SetEntityCoords(plant, endCoords.x, endCoords.y, endCoords.z + Config.ObjectZOffset)
 
             -- [E] To spawn plant
             if IsControlPressed(0, 38) then
                 -- print(materialHash)
 
-                if Shared.GroundHashes[materialHash] then
+                if Config.GroundHashes[materialHash] then
 
                     seedPlaced = true
                     lib.hideTextUI()
@@ -256,7 +256,7 @@ RegisterNetEvent('weedplanting:client:FireGoBrrrrrrr', function(coords)
     lib.requestNamedPtfxAsset('core')
     UseParticleFxAsset('core')
     local effect = StartParticleFxLoopedAtCoord('ent_ray_paleto_gas_flames', coords.x, coords.y, coords.z + 0.5, 0.0, 0.0, 0.0, 0.6, false, false, false, false)
-    Wait(Shared.FireTime)
+    Wait(Config.FireTime)
     StopParticleFxLooped(effect, 0)
     RemoveNamedPtfxAsset('core')
 end)
@@ -312,7 +312,7 @@ RegisterNetEvent('weedplanting:client:HarvestPlant', function(entity)
 end)
 
 RegisterNetEvent('weedplanting:client:GiveWater', function(entity)
-    if not client.hasItems(Shared.WaterItem, 1) then
+    if not client.hasItems(Config.WaterItem, 1) then
         return utils.notify(Locales['notify_title_planting'], Locales['missing_water'], 'error', 3000)
     end
 
@@ -355,7 +355,7 @@ RegisterNetEvent('weedplanting:client:GiveWater', function(entity)
 end)
 
 RegisterNetEvent('weedplanting:client:GiveFertilizer', function(entity)
-    if not client.hasItems(Shared.FertilizerItem, 1) then
+    if not client.hasItems(Config.FertilizerItem, 1) then
         return utils.notify(Locales['notify_title_planting'], Locales['missing_fertilizer'], 'error', 3000)
     end
 
@@ -392,7 +392,7 @@ RegisterNetEvent('weedplanting:client:GiveFertilizer', function(entity)
 end)
 
 RegisterNetEvent('weedplanting:client:AddMaleSeed', function(entity)
-    if not client.hasItems(Shared.MaleSeed, 1) then
+    if not client.hasItems(Config.MaleSeed, 1) then
         return utils.notify(Locales['notify_title_planting'], Locales['missing_mseed'], 'error', 3000)
     end
 
@@ -423,7 +423,7 @@ end)
 --- Threads
 
 if Config.Target == 'ox_target' then
-    exports['ox_target']:addModel(Shared.WeedProps, {
+    exports['ox_target']:addModel(Config.WeedProps, {
         {
             name = 'weedplanting_main',
             event = 'weedplanting:client:CheckPlant',
@@ -436,7 +436,7 @@ if Config.Target == 'ox_target' then
         }
     })
 elseif Config.Target == 'qb-target' then
-    exports['qb-target']:AddTargetModel(Shared.WeedProps, {
+    exports['qb-target']:AddTargetModel(Config.WeedProps, {
         options = {
             {
                 type = 'client',

@@ -1,6 +1,6 @@
 local WeedPlants = {}
 
-local HealthBaseDecay = math.random(Shared.HealthBaseDecay[1], Shared.HealthBaseDecay[2])
+local HealthBaseDecay = math.random(Config.HealthBaseDecay[1], Config.HealthBaseDecay[2])
 
 --- Functions
 
@@ -22,7 +22,7 @@ local calcGrowth = function(k)
     if not WeedPlants[k] then return nil end
 
     local current_time = os.time()
-    local growTime = Shared.GrowTime * 60
+    local growTime = Config.GrowTime * 60
     local progress = os.difftime(current_time, WeedPlants[k].time)
     local growth = round(progress * 100 / growTime, 2)
 
@@ -56,7 +56,7 @@ local calcFertilizer = function(k)
         end
 
         local time_elapsed = os.difftime(current_time, last_fertilizer)
-        local fertilizer = round(100 - (time_elapsed / 60 * Shared.FertilizerDecay), 2)
+        local fertilizer = round(100 - (time_elapsed / 60 * Config.FertilizerDecay), 2)
 
         return math.max(fertilizer, 0.00)
     end
@@ -78,7 +78,7 @@ local calcWater = function(k)
             return 0
         end
         local time_elapsed = os.difftime(current_time, last_water)
-        local water = round(100 - (time_elapsed / 60 * Shared.WaterDecay), 2)
+        local water = round(100 - (time_elapsed / 60 * Config.WaterDecay), 2)
         return math.max(water, 0.00)
     end
 end
@@ -93,12 +93,12 @@ local calcHealth = function(k)
     local current_time = os.time()
     local planted_time = WeedPlants[k].time
     local elapsed_time = os.difftime(current_time, planted_time)
-    local intervals = math.floor(elapsed_time / 60 / Shared.LoopUpdate)
+    local intervals = math.floor(elapsed_time / 60 / Config.LoopUpdate)
 
     if intervals == 0 then return 100 end
 
     for i = 1, intervals do
-        local interval_time = planted_time + math.floor(i * Shared.LoopUpdate * 60)
+        local interval_time = planted_time + math.floor(i * Config.LoopUpdate * 60)
 
         if #WeedPlants[k].fertilizer == 0 then
             health -= HealthBaseDecay
@@ -114,9 +114,9 @@ local calcHealth = function(k)
 
             local time_since_fertilizer = os.difftime(interval_time, last_fertilizer)
 
-            local fertilizer_amount = math.max(round(100 - (time_since_fertilizer / 60 * Shared.FertilizerDecay), 2), 0.00)
+            local fertilizer_amount = math.max(round(100 - (time_since_fertilizer / 60 * Config.FertilizerDecay), 2), 0.00)
 
-            if last_fertilizer == planted_time or fertilizer_amount < Shared.FertilizerThreshold then
+            if last_fertilizer == planted_time or fertilizer_amount < Config.FertilizerThreshold then
                 health -= HealthBaseDecay
             end
         end
@@ -134,9 +134,9 @@ local calcHealth = function(k)
             end
 
             local time_since_water = os.difftime(interval_time, last_water)
-            local water_amount = math.max(round(100 - (time_since_water / 60 * Shared.WaterDecay), 2), 0.00)
+            local water_amount = math.max(round(100 - (time_since_water / 60 * Config.WaterDecay), 2), 0.00)
 
-            if last_water == planted_time or water_amount < Shared.WaterThreshold then
+            if last_water == planted_time or water_amount < Config.WaterThreshold then
                 health -= HealthBaseDecay
             end
         end
@@ -154,16 +154,16 @@ local setupPlants = function()
     ]])
 
     local current_time = os.time()
-    local growTime = Shared.GrowTime * 60
+    local growTime = Config.GrowTime * 60
 
     for k, v in pairs(result) do
         local progress = os.difftime(current_time, v.time)
         local growth = math.min(round(progress * 100 / growTime, 2), 100.00)
         local stage = calcStage(growth)
 
-        local ModelHash = Shared.WeedProps[stage]
+        local ModelHash = Config.WeedProps[stage]
         local coords = json.decode(v.coords)
-        local plant = CreateObjectNoOffset(ModelHash, coords.x, coords.y, coords.z + Shared.ObjectZOffset, true, true, false)
+        local plant = CreateObjectNoOffset(ModelHash, coords.x, coords.y, coords.z + Config.ObjectZOffset, true, true, false)
 
         FreezeEntityPosition(plant, true)
 
@@ -206,8 +206,8 @@ local updatePlantProp = function(k, stage)
     if not DoesEntityExist(WeedPlants[k].entity) then return end
     DeleteEntity(WeedPlants[k].entity)
 
-    local ModelHash = Shared.WeedProps[stage]
-    local plant = CreateObjectNoOffset(ModelHash, WeedPlants[k].coords.x, WeedPlants[k].coords.y, WeedPlants[k].coords.z + Shared.ObjectZOffset, true, true, false)
+    local ModelHash = Config.WeedProps[stage]
+    local plant = CreateObjectNoOffset(ModelHash, WeedPlants[k].coords.x, WeedPlants[k].coords.y, WeedPlants[k].coords.z + Config.ObjectZOffset, true, true, false)
     FreezeEntityPosition(plant, true)
     WeedPlants[k].entity = plant
 
@@ -218,7 +218,7 @@ local updatePlantProp = function(k, stage)
     end
 end
 
---- Method to perform an update on every weedplant, updating their prop if needed, repeats every Shared.LoopUpdate minutes
+--- Method to perform an update on every weedplant, updating their prop if needed, repeats every Config.LoopUpdate minutes
 ---@return nil
 updatePlants = function()
     for k, v in pairs(WeedPlants) do
@@ -231,7 +231,7 @@ updatePlants = function()
         end
     end
 
-    SetTimeout(Shared.LoopUpdate * 60 * 1000, updatePlants)
+    SetTimeout(Config.LoopUpdate * 60 * 1000, updatePlants)
 end
 
 --- Resource start/stop events
@@ -241,7 +241,7 @@ AddEventHandler('onResourceStart', function(resource)
 
     setupPlants()
 
-    if Shared.ClearOnStartup then
+    if Config.ClearOnStartup then
         Wait(5000) -- Wait 5 seconds to allow all functions to be executed on startup
 
         for k, v in pairs(WeedPlants) do
@@ -278,11 +278,11 @@ RegisterNetEvent('weedplanting:server:CreateNewPlant', function(coords)
 
     local PlayerData = server.getPlayerData(Player)
 
-    if #(GetEntityCoords(GetPlayerPed(src)) - coords) > Shared.rayCastingDistance + 10 then return end
+    if #(GetEntityCoords(GetPlayerPed(src)) - coords) > Config.rayCastingDistance + 10 then return end
 
-    if server.removeItem(src, Shared.FemaleSeed, 1) then
-        local ModelHash = Shared.WeedProps[1]
-        local plant = CreateObjectNoOffset(ModelHash, coords.x, coords.y, coords.z + Shared.ObjectZOffset, true, true, false)
+    if server.removeItem(src, Config.FemaleSeed, 1) then
+        local ModelHash = Config.WeedProps[1]
+        local plant = CreateObjectNoOffset(ModelHash, coords.x, coords.y, coords.z + Config.ObjectZOffset, true, true, false)
         FreezeEntityPosition(plant, true)
         local time = os.time()
 
@@ -348,7 +348,7 @@ RegisterNetEvent('weedplanting:server:PoliceDestroy', function(netId)
         WeedPlants[id] = nil
 
         TriggerClientEvent('weedplanting:client:FireGoBrrrrrrr', -1, coords)
-        Wait(Shared.FireTime)
+        Wait(Config.FireTime)
         DeleteEntity(plant)
 
         server.createLog(PlayerData.name, 'Police Destroy', PlayerData.name .. ' (identifier: ' .. PlayerData.identifier .. ' | id: ' .. src .. ')' .. ' destroyed plant ' .. id)
@@ -412,13 +412,13 @@ RegisterNetEvent('weedplanting:server:HarvestPlant', function(netId)
         if gender == 'female' then
             local metaData = { health = health }
 
-            server.addItem(src, Shared.BranchItem, 1, metaData)
+            server.addItem(src, Config.BranchItem, 1, metaData)
         else -- male seed added
             local mSeeds = math.floor(health / 20)
-            server.addItem(src, Shared.MaleSeed, mSeeds)
+            server.addItem(src, Config.MaleSeed, mSeeds)
 
             local fSeeds = math.floor(health / 20)
-            server.addItem(src, Shared.FemaleSeed, fSeeds)
+            server.addItem(src, Config.FemaleSeed, fSeeds)
         end
         
         DeleteEntity(WeedPlants[id].entity)
@@ -449,7 +449,7 @@ RegisterNetEvent('weedplanting:server:GiveWater', function(netId)
 
     if #(GetEntityCoords(GetPlayerPed(src)) - WeedPlants[id].coords) > 10 then return end
 
-    if exports['ox_inventory']:RemoveItem(src, Shared.WaterItem, 1) then        
+    if exports['ox_inventory']:RemoveItem(src, Config.WaterItem, 1) then        
         WeedPlants[id].water[#WeedPlants[id].water + 1] = os.time()
 
         MySQL.update([[
@@ -478,7 +478,7 @@ RegisterNetEvent('weedplanting:server:GiveFertilizer', function(netId)
     
     if #(GetEntityCoords(GetPlayerPed(src)) - WeedPlants[id].coords) > 10 then return end
 
-    if exports['ox_inventory']:RemoveItem(src, Shared.FertilizerItem, 1) then
+    if exports['ox_inventory']:RemoveItem(src, Config.FertilizerItem, 1) then
         WeedPlants[id].fertilizer[#WeedPlants[id].fertilizer + 1] = os.time()
         
         MySQL.update([[
@@ -507,7 +507,7 @@ RegisterNetEvent('weedplanting:server:AddMaleSeed', function(netId)
     
     if #(GetEntityCoords(GetPlayerPed(src)) - WeedPlants[id].coords) > 10 then return end
 
-    if exports['ox_inventory']:RemoveItem(src, Shared.MaleSeed, 1) then
+    if exports['ox_inventory']:RemoveItem(src, Config.MaleSeed, 1) then
         WeedPlants[id].gender = 'male'
 
         MySQL.update([[
@@ -549,13 +549,13 @@ end)
 
 --- Items
 
-server.registerUseableItem(Shared.FemaleSeed, function(source)
+server.registerUseableItem(Config.FemaleSeed, function(source)
     TriggerClientEvent('weedplanting:client:UseWeedSeed', source)
 end)
 
 --- Threads
 
 CreateThread(function()
-    Wait(Shared.LoopUpdate * 60 * 1000)
+    Wait(Config.LoopUpdate * 60 * 1000)
     updatePlants()
 end)

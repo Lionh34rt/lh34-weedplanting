@@ -24,9 +24,9 @@ local checkPackage = function()
         lib.playAnim(ped, 'anim@heists@box_carry@', 'idle', 5.0, -1, -1, 50, 0, false, false, false)
 
         -- Package
-        lib.requestModel(Shared.PackageProp)
-        local object = CreateObject(Shared.PackageProp, pos.x, pos.y, pos.z, true, true, true)
-        SetModelAsNoLongerNeeded(Shared.PackageProp)
+        lib.requestModel(Config.PackageProp)
+        local object = CreateObject(Config.PackageProp, pos.x, pos.y, pos.z, true, true, true)
+        SetModelAsNoLongerNeeded(Config.PackageProp)
 
         AttachEntityToEntity(object, ped, GetPedBoneIndex(ped, 57005), 0.1, 0.1, -0.25, 300.0, 250.0, 15.0, true, true, false, true, 1, true)
         package = object
@@ -65,7 +65,7 @@ end
 ---@return nil
 local createDropOffPed = function(coords)
 	if deliveryPed then return end
-	local model = Shared.DropOffPeds[math.random(#Shared.DropOffPeds)]
+	local model = Config.DropOffPeds[math.random(#Config.DropOffPeds)]
 	local hash = joaat(model)
 
     lib.requestModel(hash)
@@ -132,7 +132,7 @@ local createNewDropOff = function()
 
     utils.phoneNotification(Locales['weedrun_delivery_title'], Locales['weedrun_delivery_godropoff'], 'fas fa-cannabis', '#00FF00', 8000)
     
-    local randomLoc = Shared.DropOffLocations[math.random(#Shared.DropOffLocations)]
+    local randomLoc = Config.DropOffLocations[math.random(#Config.DropOffLocations)]
     createDropOffBlip(randomLoc)
 
     dropOffArea = lib.zones.sphere({
@@ -183,7 +183,7 @@ end
 --- OxInventory: when inventory is updated, this eventhandler will check if the player still has suspicious packages
 
 AddEventHandler('ox_inventory:itemCount', function(name, count)
-    if name ~= Shared.SusPackageItem then return end
+    if name ~= Config.SusPackageItem then return end
 
     if count > 0 then
         checkPackage()
@@ -202,7 +202,7 @@ end)
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
     Wait(250) -- May have to increase this to 500 or 1000 so the core/invent can catch up, you also may want to throw out qb-inventory and just get ox_inventory...
 
-    if client.hasItems(Shared.SusPackageItem, 1) then
+    if client.hasItems(Config.SusPackageItem, 1) then
         checkPackage()
     end
 end)
@@ -210,7 +210,7 @@ end)
 RegisterNetEvent('weedplanting:client:StartPackage', function(data)
     if waitingForPackage then return end
 
-    if not client.hasItems(Shared.PackedWeedItem, 1) then
+    if not client.hasItems(Config.PackedWeedItem, 1) then
         return utils.notify(Locales['notify_title_run'], Locales['dont_have_anything'], 'error', 3000)
     end
 
@@ -241,7 +241,7 @@ RegisterNetEvent('weedplanting:client:StartPackage', function(data)
         utils.notify(Locales['notify_title_run'], Locales['wait_closeby'], 'inform', 3000)
 
         packageZone = lib.zones.sphere({
-            coords = Shared.WeedRunStart.xyz,
+            coords = Config.WeedRunStart.xyz,
             radius = 10.0,
             debug = false,
             onExit = function(self)
@@ -274,7 +274,7 @@ RegisterNetEvent('weedplanting:client:ClockIn', function()
     delivering = true
 
     utils.phoneNotification(Locales['weedrun_delivery_title'], Locales['weedrun_delivery_waitfornew'], 'fas fa-cannabis', '#00FF00', 8000)
-    Wait(math.random(Shared.DeliveryWaitTime[1], Shared.DeliveryWaitTime[2]))
+    Wait(math.random(Config.DeliveryWaitTime[1], Config.DeliveryWaitTime[2]))
 
     createNewDropOff()
 end)
@@ -315,7 +315,7 @@ RegisterNetEvent('weedplanting:client:DeliverWeed', function()
         end
 
 		-- Alert Cops
-		if math.random(100) <= Shared.CallCopsChance then
+		if math.random(100) <= Config.CallCopsChance then
             utils.alertPolice()
         end
         
@@ -357,7 +357,7 @@ RegisterNetEvent('weedplanting:client:DeliverWeed', function()
 		hasDropOff = false
 		madeDeal = false
 
-        Wait(math.random(Shared.DeliveryWaitTime[1], Shared.DeliveryWaitTime[2]))
+        Wait(math.random(Config.DeliveryWaitTime[1], Config.DeliveryWaitTime[2]))
         createNewDropOff()
 	end
 end)
@@ -365,9 +365,9 @@ end)
 --- Points
 
 local onEnterPoint = function(point)
-	local pedModel = Shared.PedModel
+	local pedModel = Config.PedModel
     lib.requestModel(pedModel)
-    local ped = CreatePed(0, pedModel, Shared.WeedRunStart.x, Shared.WeedRunStart.y, Shared.WeedRunStart.z - 1.0, Shared.WeedRunStart.w, false, false)
+    local ped = CreatePed(0, pedModel, Config.WeedRunStart.x, Config.WeedRunStart.y, Config.WeedRunStart.z - 1.0, Config.WeedRunStart.w, false, false)
     SetModelAsNoLongerNeeded(pedModel)
     
     FreezeEntityPosition(ped, true)
@@ -480,9 +480,9 @@ local onExitPoint = function(point)
 end
 
 local point = lib.points.new({
-    coords = Shared.WeedRunStart.xyz,
+    coords = Config.WeedRunStart.xyz,
     distance = 60,
     onEnter = onEnterPoint,
     onExit = onExitPoint,
-    heading = Shared.WeedRunStart.w
+    heading = Config.WeedRunStart.w
 })

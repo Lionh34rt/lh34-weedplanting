@@ -21,7 +21,7 @@ RegisterNetEvent('weedplanting:server:CollectPackageGoods', function()
     elseif packageCache[identifier] == 'done' then
         packageCache[identifier] = nil
         TriggerClientEvent('weedplanting:client:PackageGoodsReceived', src)
-        exports['ox_inventory']:AddItem(src, Shared.SusPackageItem, 1)
+        exports['ox_inventory']:AddItem(src, Config.SusPackageItem, 1)
     end
 end)
 
@@ -49,9 +49,9 @@ RegisterNetEvent('weedplanting:server:WeedrunDelivery', function()
     local Player = server.GetPlayerFromId(src)
     if not Player then return end
 
-    if server.removeItem(src, Shared.SusPackageItem, 1) then
+    if server.removeItem(src, Config.SusPackageItem, 1) then
         Wait(2000)
-        local payout = math.random(Shared.PayOut[1], Shared.PayOut[2])
+        local payout = math.random(Config.PayOut[1], Config.PayOut[2])
         server.addMoney(Player, 'cash', payout, 'weedrun-delivery')
 
         server.createLog(PlayerData.name, 'Weedrun Delivery', PlayerData.name .. ' (identifier: ' .. PlayerData.identifier .. ' | id: ' .. src .. ')' .. ' Received ' .. payout .. ', cash for delivering package')
@@ -67,14 +67,14 @@ lib.callback.register('weedplanting:server:PackageGoods', function(source)
 
     if packageCache[identifier] then return false end
     
-    if not server.removeItem(src, Shared.PackedWeedItem, 1) then
+    if not server.removeItem(src, Config.PackedWeedItem, 1) then
         return false
     end
 
     packageCache[identifier] = 'waiting'
 
     CreateThread(function()
-        Wait(Shared.PackageTime * 60 * 1000)
+        Wait(Config.PackageTime * 60 * 1000)
 
         if packageCache[identifier] then
             packageCache[identifier] = 'done'

@@ -1,34 +1,34 @@
 --- Process Branch
 
-server.registerUseableItem(Shared.BranchItem, function(source, item)
+server.registerUseableItem(Config.BranchItem, function(source, item)
     if not server.hasItem(source, item.name) then return end
 
     local removeItem = lib.callback.await('weedplanting:client:UseBranch', source)
 
     if removeItem then
-        local item = server.getItem(source, Shared.BranchItem)
+        local item = server.getItem(source, Config.BranchItem)
 
         if not item then return end
     
         local health = item?.metadata.health or item?.info.health or 100
 
         if server.removeItem(source, item.name, 1, item.metadata or item.info, item.slot) then
-            server.addItem(source, Shared.WeedItem, health)
+            server.addItem(source, Config.WeedItem, health)
         end
     end
 end)
 
 --- Package Bags
 
-server.registerUseableItem(Shared.WeedItem, function(source, item)
-    local hasItem = server.hasItem(src, Shared.WeedItem, 20)
+server.registerUseableItem(Config.WeedItem, function(source, item)
+    local hasItem = server.hasItem(src, Config.WeedItem, 20)
 
     if hasItem then
         local removeItem = lib.callback.await('weedplanting:client:UseDryWeed', source)
 
         if removeItem then
-            if server.removeItem(src, Shared.WeedItem, 20) then
-                server.addItem(src, Shared.PackedWeedItem, 1)
+            if server.removeItem(src, Config.WeedItem, 20) then
+                server.addItem(src, Config.PackedWeedItem, 1)
             end
         end
     else

@@ -1,5 +1,5 @@
-Locales = json.decode(LoadResourceFile(Shared.Resource, ('locales/%s.json'):format(Config.Lang)))
+Locales = json.decode(LoadResourceFile(Config.Resource, ('locales/%s.json'):format(Config.Lang)))
 
 if not Locales then
-    Locales = json.decode(LoadResourceFile(Shared.Resource, ('locales/en.json')))
+    Locales = json.decode(LoadResourceFile(Config.Resource, ('locales/en.json')))
 end
